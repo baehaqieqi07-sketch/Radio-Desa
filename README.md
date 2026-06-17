@@ -82,3 +82,63 @@ Jangan timpa atau hapus: `.env`, `config.json`, `db.json`, `voice-data.json`, `v
 ## Thumbnail panel khusus
 
 Gambar kanan atas embed panel memakai file `assets/desa-tulus-panel.gif`. File dikirim sebagai attachment Discord (`attachment://desa-tulus-panel.gif`) agar GIF yang diberikan dapat digunakan langsung tanpa membuat gambar baru. Jika file hilang, bot otomatis memakai emoji DESA TULUS sebagai fallback.
+
+---
+
+## Update v2.0.4 — Cari Voice Warga
+
+### Channel baru
+Saat `/radio-setup` dijalankan, bot membuat atau memakai channel berikut tanpa menduplikasi channel lama:
+
+```text
+🔎 | cari-voice
+```
+
+Channel ditempatkan di category create voice warga. Semua member dapat melihat dan mengirim command di channel ini.
+
+### Command cari voice
+
+Prefix:
+
+```text
+rvoice @user
+```
+
+Slash command:
+
+```text
+/radio-voice user:@user
+```
+
+Jika target berada di voice:
+
+```text
+🔊 **NamaUser** sedang berada di voice #NamaVoice
+```
+
+Nama voice dikirim sebagai mention channel Discord (`<#CHANNEL_ID>`), sehingga dapat diklik langsung.
+
+Jika target tidak berada di voice:
+
+```text
+🔇 **NamaUser** tidak sedang berada di voice channel.
+```
+
+Command hanya dapat digunakan di channel `🔎 | cari-voice`. Jika digunakan di channel lain, bot mengarahkan user ke channel yang benar.
+
+### Thumbnail embed
+Thumbnail kanan atas panel sekarang memakai file statis:
+
+```text
+assets/desa-tulus-panel.png
+```
+
+GIF lama tidak digunakan lagi agar gambar thumbnail tidak hilang atau gagal tampil.
+
+### Setelah update
+
+1. Push seluruh file update ke GitHub.
+2. Tunggu Railway deploy versi `2.0.4`.
+3. Jalankan `/radio-setup` sekali untuk membuat channel cari voice tanpa mereset data lama.
+4. Hapus panel lama bila perlu.
+5. Jalankan `/radio-panel` untuk mengirim panel dengan thumbnail foto baru.

@@ -29,6 +29,7 @@ const DEFAULT_CONFIG = {
   animatedEmojiId: '1516424353934348299',
   publicCreatorCategoryName: '═════ ➕BUAT VOICE➕ ═════',
   publicPanelChannelName: '〢•🎛️│ Pengaturan-Voice',
+  voiceSearchChannelName: '🔎 | cari-voice',
   publicCreatorChannelName: '🏡 │ Buat Rumah',
   publicRoomCategoryNames: [
     '═════ 🔊RUANG WARGA 1🔊 ═════',
@@ -85,6 +86,10 @@ function buildSlashCommands() {
     setupOptions(new SlashCommandBuilder().setName('voice-setup').setDescription('Alias lama untuk setup Radio Desa')),
     new SlashCommandBuilder().setName('radio-panel').setDescription('Kirim ulang panel Radio Desa').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
     new SlashCommandBuilder().setName('voice-panel').setDescription('Alias lama untuk panel Radio Desa').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+    new SlashCommandBuilder()
+      .setName('radio-voice')
+      .setDescription('Cari voice channel tempat seorang warga berada')
+      .addUserOption(option => option.setName('user').setDescription('Warga yang ingin dicari').setRequired(true)),
     new SlashCommandBuilder().setName('radio-status').setDescription('Lihat status Rumah atau Villa milikmu'),
     new SlashCommandBuilder().setName('radio-help').setDescription('Lihat panduan command Radio Desa'),
     new SlashCommandBuilder().setName('radio-reset').setDescription('Reset referensi setup tanpa menghapus channel').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
@@ -155,6 +160,7 @@ function ensureGuildData(guildId) {
       publicCreatorCategoryId: null,
       publicCreatorChannelId: null,
       publicPanelChannelId: null,
+      voiceSearchChannelId: null,
       publicRoomCategoryIds: [],
       vipCreatorCategoryId: null,
       vipCreatorChannelId: null,
@@ -163,7 +169,14 @@ function ensureGuildData(guildId) {
     };
     saveDB();
   }
-  return db.guilds[guildId];
+
+  const guildData = db.guilds[guildId];
+  if (!Object.prototype.hasOwnProperty.call(guildData, 'voiceSearchChannelId')) {
+    guildData.voiceSearchChannelId = null;
+    saveDB();
+  }
+
+  return guildData;
 }
 
 function cleanName(name) {
@@ -339,10 +352,10 @@ function panelComponents() {
 }
 
 async function sendVoicePanel(channel, guildData, panelType = 'public') {
-  const thumbnailPath = path.join(__dirname, 'assets', 'desa-tulus-panel.gif');
+  const thumbnailPath = path.join(__dirname, 'assets', 'desa-tulus-panel.png');
   const hasCustomThumbnail = fs.existsSync(thumbnailPath);
   const thumbnailUrl = hasCustomThumbnail
-    ? 'attachment://desa-tulus-panel.gif'
+    ? 'attachment://desa-tulus-panel.png'
     : animatedEmojiUrl();
 
   const payload = {
@@ -353,7 +366,7 @@ async function sendVoicePanel(channel, guildData, panelType = 'public') {
   if (hasCustomThumbnail) {
     payload.files = [{
       attachment: thumbnailPath,
-      name: 'desa-tulus-panel.gif'
+      name: 'desa-tulus-panel.png'
     }];
   }
 
@@ -498,6 +511,35 @@ function buildPanelOverwrites(guild, guildData, botId, vipOnly = false) {
   }
   base.push({ id: botId, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.ManageMessages] });
   return base;
+}
+
+function buildVoiceSearchOverwrites(guild, botId) {
+  return [
+    {
+      id: guild.roles.everyone.id,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.UseApplicationCommands
+      ],
+      deny: [
+        PermissionFlagsBits.CreatePublicThreads,
+        PermissionFlagsBits.CreatePrivateThreads,
+        PermissionFlagsBits.MentionEveryone
+      ]
+    },
+    {
+      id: botId,
+      allow: [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.ReadMessageHistory,
+        PermissionFlagsBits.EmbedLinks,
+        PermissionFlagsBits.ManageMessages
+      ]
+    }
+  ];
 }
 
 function buildRoomCategoryOverwrites(guild, guildData, botId) {
@@ -662,12 +704,14 @@ async function setupGuild(interaction) {
   const publicCreator = await ensureVoiceTrigger(guild, guildData.publicCreatorChannelId || guildData.creatorChannelId, config.publicCreatorChannelName, publicCreatorCategory.id, publicCreatorOw, 'Radio Desa: trigger rumah');
   const vipCreator = await ensureVoiceTrigger(guild, guildData.vipCreatorChannelId, config.vipCreatorChannelName, vipCreatorCategory.id, vipCreatorOw, 'Radio Desa: trigger villa');
   const publicPanel = await ensureTextChannel(guild, guildData.publicPanelChannelId || guildData.panelChannelId, config.publicPanelChannelName, publicCreatorCategory.id, buildPanelOverwrites(guild, guildData, me.id, false), 'Radio Desa: panel warga');
+  const voiceSearchChannel = await ensureTextChannel(guild, guildData.voiceSearchChannelId, config.voiceSearchChannelName, publicCreatorCategory.id, buildVoiceSearchOverwrites(guild, me.id), 'Radio Desa: cari voice warga');
   const vipPanel = await ensureTextChannel(guild, guildData.vipPanelChannelId, config.vipPanelChannelName, vipCreatorCategory.id, buildPanelOverwrites(guild, guildData, me.id, true), 'Radio Desa: panel VIP');
 
   Object.assign(guildData, {
     publicCreatorCategoryId: publicCreatorCategory.id,
     publicCreatorChannelId: publicCreator.id,
     publicPanelChannelId: publicPanel.id,
+    voiceSearchChannelId: voiceSearchChannel.id,
     publicRoomCategoryIds: publicRoomCategories.map(c => c.id),
     vipCreatorCategoryId: vipCreatorCategory.id,
     vipCreatorChannelId: vipCreator.id,
@@ -686,6 +730,7 @@ async function setupGuild(interaction) {
     '✅ **Radio Desa berhasil disiapkan tanpa mereset data lama.**',
     `Rumah warga: <#${publicCreator.id}>`,
     `Panel warga: <#${publicPanel.id}>`,
+    `Cari voice: <#${voiceSearchChannel.id}>`,
     `Ruang Warga 1: <#${publicRoomCategories[0].id}>`,
     `Ruang Warga 2: <#${publicRoomCategories[1].id}>`,
     `Villa VIP: <#${vipCreator.id}>`,
@@ -942,6 +987,43 @@ async function movePermittedMemberIfPossible(targetMember, voiceChannel) {
   }
 }
 
+function getVoiceSearchChannel(guild, guildData) {
+  const stored = guildData.voiceSearchChannelId
+    ? guild.channels.cache.get(guildData.voiceSearchChannelId)
+    : null;
+
+  if (stored?.isTextBased()) return stored;
+
+  const found = guild.channels.cache.find(channel =>
+    channel.type === ChannelType.GuildText &&
+    channel.name === config.voiceSearchChannelName
+  );
+
+  if (found) {
+    guildData.voiceSearchChannelId = found.id;
+    saveDB();
+  }
+
+  return found || null;
+}
+
+function voiceLookupResult(member) {
+  const displayName = cleanName(member.displayName || member.user?.username || 'User');
+  const voiceChannel = member.voice?.channel;
+
+  if (voiceChannel) {
+    return `🔊 **${displayName}** sedang berada di voice <#${voiceChannel.id}>`;
+  }
+
+  return `🔇 **${displayName}** tidak sedang berada di voice channel.`;
+}
+
+function voiceLookupChannelWarning(searchChannel) {
+  return searchChannel
+    ? `Gunakan command ini di <#${searchChannel.id}>.`
+    : 'Channel cari voice belum dibuat. Minta staff menjalankan `/radio-setup`.';
+}
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -989,7 +1071,23 @@ client.on(Events.MessageCreate, async message => {
   if (!message.guild || message.author.bot || !message.content.toLowerCase().startsWith('r')) return;
   const command = message.content.trim().toLowerCase().split(/\s+/)[0];
   const guildData = ensureGuildData(message.guild.id);
-  if (command === 'rhelp') return message.reply('**Radio Desa**\nMember: `rhelp`, `rstatus`, `rmyroom`\nVIP: gunakan panel Villa\nStaff: `rpanel`, `rsetup`\nOwner: `rbackup`');
+  if (command === 'rhelp') return message.reply('**Radio Desa**\nMember: `rhelp`, `rstatus`, `rmyroom`, `rvoice @user`\nVIP: gunakan panel Villa\nStaff: `rpanel`, `rsetup`\nOwner: `rbackup`');
+  if (command === 'rvoice') {
+    const searchChannel = getVoiceSearchChannel(message.guild, guildData);
+    if (!searchChannel || message.channel.id !== searchChannel.id) {
+      return message.reply(voiceLookupChannelWarning(searchChannel));
+    }
+
+    const targetMember = message.mentions.members.first();
+    if (!targetMember) {
+      return message.reply('Cara pakai: `rvoice @user`');
+    }
+
+    return message.reply({
+      content: voiceLookupResult(targetMember),
+      allowedMentions: { repliedUser: false }
+    });
+  }
   if (['rstatus','rmyroom'].includes(command)) {
     const found = Object.entries(db.rooms).find(([,d]) => d.guildId===message.guild.id && d.ownerId===message.author.id);
     return message.reply(found ? `Room aktifmu: <#${found[0]}> • ${roomStatusText(found[1])}` : 'Kamu belum memiliki Rumah atau Villa aktif.');
@@ -1028,8 +1126,38 @@ client.on(Events.InteractionCreate, async interaction => {
       }
 
       if (interaction.commandName === 'radio-help') {
-        await interaction.reply({ content: '**Radio Desa**\n`/radio-status` status room\n`/radio-panel` kirim panel (staff)\n`/radio-setup` setup lengkap (staff)\nPrefix: `rhelp`, `rstatus`, `rpanel`.', flags: MessageFlags.Ephemeral }); return;
+        await interaction.reply({ content: '**Radio Desa**\n`/radio-voice user:@warga` cari posisi voice warga\n`/radio-status` status room\n`/radio-panel` kirim panel (staff)\n`/radio-setup` setup lengkap (staff)\nPrefix: `rhelp`, `rstatus`, `rvoice @user`, `rpanel`.', flags: MessageFlags.Ephemeral }); return;
       }
+      if (interaction.commandName === 'radio-voice') {
+        const guildData = ensureGuildData(interaction.guild.id);
+        const searchChannel = getVoiceSearchChannel(interaction.guild, guildData);
+
+        if (!searchChannel || interaction.channelId !== searchChannel.id) {
+          await interaction.reply({
+            content: voiceLookupChannelWarning(searchChannel),
+            flags: MessageFlags.Ephemeral
+          });
+          return;
+        }
+
+        const targetUser = interaction.options.getUser('user', true);
+        const targetMember = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+
+        if (!targetMember) {
+          await interaction.reply({
+            content: 'Warga tersebut tidak ditemukan di server DESA TULUS.',
+            flags: MessageFlags.Ephemeral
+          });
+          return;
+        }
+
+        await interaction.reply({
+          content: voiceLookupResult(targetMember),
+          allowedMentions: { parse: [] }
+        });
+        return;
+      }
+
       if (interaction.commandName === 'radio-status') {
         const found = Object.entries(db.rooms).find(([, d]) => d.guildId === interaction.guild.id && d.ownerId === interaction.user.id);
         if (!found) { await interaction.reply({ content:'Kamu belum memiliki Rumah atau Villa aktif.', flags:MessageFlags.Ephemeral }); return; }

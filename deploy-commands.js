@@ -14,6 +14,10 @@ const commands=[
  setup(new SlashCommandBuilder().setName('voice-setup').setDescription('Alias lama setup Radio Desa')),
  new SlashCommandBuilder().setName('radio-panel').setDescription('Kirim ulang panel Radio Desa').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
  new SlashCommandBuilder().setName('voice-panel').setDescription('Alias lama panel Radio Desa').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
+ new SlashCommandBuilder()
+   .setName('radio-voice')
+   .setDescription('Cari voice channel tempat seorang warga berada')
+   .addUserOption(o=>o.setName('user').setDescription('Warga yang ingin dicari').setRequired(true)),
  new SlashCommandBuilder().setName('radio-status').setDescription('Lihat status Rumah atau Villa milikmu'),
  new SlashCommandBuilder().setName('radio-help').setDescription('Panduan Radio Desa'),
  new SlashCommandBuilder().setName('radio-reset').setDescription('Reset referensi setup tanpa menghapus channel').setDefaultMemberPermissions(PermissionFlagsBits.Administrator),

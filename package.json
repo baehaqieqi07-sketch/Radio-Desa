@@ -1,6 +1,6 @@
 {
   "name": "radio-desa",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Radio Desa - temporary voice bot premium untuk DESA TULUS",
   "main": "index.js",
   "scripts": {

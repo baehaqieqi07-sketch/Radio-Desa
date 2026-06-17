@@ -1,0 +1,45 @@
+RADIO DESA v2.0.4 — CARI VOICE WARGA
+=====================================
+
+FITUR BARU
+- Channel khusus: 🔎 | cari-voice
+- Prefix: rvoice @user
+- Slash: /radio-voice user:@user
+
+ALUR PREFIX
+1. Masuk ke channel 🔎 | cari-voice.
+2. Ketik: rvoice @user
+3. Bot membaca voice state user target.
+4. Jika target sedang berada di voice:
+   🔊 **User** sedang berada di voice <#ID_VOICE>
+5. Jika target tidak sedang berada di voice:
+   🔇 **User** tidak sedang berada di voice channel.
+
+ALUR SLASH
+1. Masuk ke channel 🔎 | cari-voice.
+2. Jalankan /radio-voice.
+3. Isi pilihan user.
+4. Bot menampilkan hasil yang sama seperti command prefix.
+
+CATATAN
+- Mention voice memakai format Discord <#CHANNEL_ID>, jadi nama voice tampil sebagai channel yang bisa diklik.
+- Command ditolak jika dipakai di luar channel cari voice.
+- /radio-setup akan membuat channel jika belum ada dan tidak menduplikasi jika sudah tersimpan.
+- Data setup dan room lama tidak direset.
+
+THUMBNAIL PANEL
+- GIF lama dihapus.
+- Foto statis baru: assets/desa-tulus-panel.png
+- Jalankan /radio-panel setelah deploy agar panel lama diganti dengan panel baru.
+
+DEPLOY
+cd /d "D:\Radio Desa"
+npm install
+npm run check
+git add -A
+git commit -m "add cari voice feature and static panel thumbnail"
+git push
+
+Setelah bot online:
+/radio-setup
+/radio-panel
