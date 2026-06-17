@@ -1,0 +1,28 @@
+{
+  "name": "radio-desa",
+  "version": "2.0.0",
+  "description": "Radio Desa - temporary voice bot premium untuk DESA TULUS",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js",
+    "check": "node --check index.js && node --check deploy-commands.js"
+  },
+  "keywords": [
+    "discord",
+    "discord.js",
+    "temporary-voice",
+    "desa-tulus",
+    "radio-desa"
+  ],
+  "author": "DESA TULUS",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "engines": {
+    "node": ">=18.20.0"
+  }
+}

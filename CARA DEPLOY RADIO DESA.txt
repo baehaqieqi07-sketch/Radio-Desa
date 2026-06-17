@@ -1,0 +1,13 @@
+RADIO DESA - DESA TULUS / RAILWAY
+
+1. npm install
+2. npm run check
+3. npm run deploy
+4. npm start
+5. Push ke GitHub
+6. Railway > Deploy from GitHub
+7. Isi Variables: DISCORD_TOKEN, CLIENT_ID, GUILD_ID, AUTO_REGISTER_COMMANDS=true, DASHBOARD_ENABLED=false
+8. Start command: npm start
+9. Redeploy
+
+Jangan upload .env, token, config aktif, atau db.json aktif ke GitHub.

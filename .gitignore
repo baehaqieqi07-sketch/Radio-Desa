@@ -1,0 +1,27 @@
+node_modules/
+.env
+.env.*
+!.env.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+runtime-logs/
+logs/
+backups/
+*.backup.json
+*.tmp
+
+# Data/config aktif server jangan ikut ke GitHub / ZIP update
+config.json
+db.json
+voice-data.json
+voice-state.json
+panel-state.json
+*.sqlite
+*.db
+
+# Secrets
+*.key
+*.pem

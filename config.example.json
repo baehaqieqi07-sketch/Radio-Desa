@@ -1,0 +1,21 @@
+{
+  "serverName": "DESA TULUS",
+  "botName": "Radio Desa",
+  "embedColor": "#315C45",
+  "animatedEmojiId": "1516424353934348299",
+  "publicCreatorCategoryName": "═════ ➕BUAT VOICE➕ ═════",
+  "publicPanelChannelName": "〢•🎛️│ Pengaturan-Voice",
+  "publicCreatorChannelName": "🏡 │ Buat Rumah",
+  "publicRoomCategoryNames": [
+    "═════ 🔊RUANG WARGA 1🔊 ═════",
+    "═════ 🔊RUANG WARGA 2🔊 ═════"
+  ],
+  "publicRoomNameFormat": "🏡 │ Rumah {username}",
+  "publicCategoryCapacity": 10,
+  "vipCreatorCategoryName": "═════ ➕BUAT VOICE➕ ═════",
+  "vipPanelChannelName": "〢•🎛️│ Pengaturan-Voice",
+  "vipCreatorChannelName": "🏯 │ Buat Villa",
+  "vipRoomCategoryName": "═════ 💎RUANG VIP💎 ═════",
+  "vipRoomNameFormat": "🏯 │ Villa {username}",
+  "panelFooter": "DESA TULUS • Radio Panel"
+}
