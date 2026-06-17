@@ -77,3 +77,8 @@ Dashboard dimatikan default dengan `DASHBOARD_ENABLED=false`. Untuk mengaktifkan
 
 ## Data aktif
 Jangan timpa atau hapus: `.env`, `config.json`, `db.json`, `voice-data.json`, `voice-state.json`, `panel-state.json`, dan folder backup/log aktif.
+
+
+## Thumbnail panel khusus
+
+Gambar kanan atas embed panel memakai file `assets/desa-tulus-panel.gif`. File dikirim sebagai attachment Discord (`attachment://desa-tulus-panel.gif`) agar GIF yang diberikan dapat digunakan langsung tanpa membuat gambar baru. Jika file hilang, bot otomatis memakai emoji DESA TULUS sebagai fallback.

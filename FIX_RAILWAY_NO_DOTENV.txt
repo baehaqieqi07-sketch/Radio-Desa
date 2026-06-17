@@ -1,0 +1,37 @@
+RADIO DESA — FIX RAILWAY TANPA DOTENV / EXPRESS
+
+Penyebab error:
+- Railway menjalankan index.js yang masih memanggil dotenv.
+- Modul dotenv tidak tersedia di container.
+
+Perbaikan:
+- index.js tidak lagi membutuhkan dotenv.
+- deploy-commands.js tidak lagi membutuhkan dotenv.
+- Railway Variables dibaca langsung lewat process.env.
+- Express/dashboard tidak dijalankan pada runtime bot.
+- package-lock.json sengaja dihapus agar Railway memakai npm install, bukan npm ci.
+- Node.js tetap 20.x.
+
+WAJIB saat mengganti project lama:
+1. Timpa index.js, deploy-commands.js, package.json, dan .npmrc.
+2. HAPUS package-lock.json lama dari folder dan GitHub.
+3. Push perubahan.
+4. Hapus Railway variable NIXPACKS_INSTALL_CMD jika pernah dibuat.
+5. Redeploy dengan Clear Build Cache.
+
+Command:
+  cd /d "D:\Radio Desa"
+  del package-lock.json
+  npm install
+  npm run check
+  git add -A
+  git commit -m "fix Radio Desa Railway without dotenv and express"
+  git push
+
+Railway Variables:
+  DISCORD_TOKEN=...
+  CLIENT_ID=...
+  GUILD_ID=1504495052217651343
+  AUTO_REGISTER_COMMANDS=true
+  DASHBOARD_ENABLED=false
+  NIXPACKS_NODE_VERSION=20

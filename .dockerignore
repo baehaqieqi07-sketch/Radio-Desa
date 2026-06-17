@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log*
+.env
+.env.*
+!.env.example
+.git
+.gitignore
+logs
+runtime-logs
+backups
+*.backup.json
+*.tmp
+config.json
+db.json
+voice-data.json
+voice-state.json
+panel-state.json

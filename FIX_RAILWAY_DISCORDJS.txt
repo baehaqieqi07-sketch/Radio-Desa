@@ -1,0 +1,16 @@
+FIX FINAL RAILWAY — discord.js MODULE_NOT_FOUND
+
+Penyebab utama: dependency tidak masuk ke image runtime Railway.
+Versi ini memakai Dockerfile Node 20 dan memverifikasi discord.js saat build.
+
+Langkah:
+1. Timpa file project dengan isi paket ini.
+2. Jalankan npm install dan npm run check.
+3. Push semua file, termasuk Dockerfile, .dockerignore, package-lock.json, railway.json.
+4. Railway -> Deployments -> Redeploy / Deploy Latest Commit.
+5. Clear build cache jika tersedia.
+
+Log build yang benar harus memuat:
+✅ discord.js terpasang
+
+Jangan upload .env atau token ke GitHub.

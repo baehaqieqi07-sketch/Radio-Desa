@@ -1,8 +1,6 @@
-require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
-const express = require('express');
 const {
   ActionRowBuilder,
   REST,
@@ -282,7 +280,7 @@ function animatedEmojiUrl() {
   return `https://cdn.discordapp.com/emojis/${config.animatedEmojiId}.gif?size=128&quality=lossless`;
 }
 
-function panelEmbed(guildData, panelType = 'public') {
+function panelEmbed(guildData, panelType = 'public', thumbnailUrl = animatedEmojiUrl()) {
   const isVip = panelType === 'vip';
   const triggerName = isVip ? config.vipCreatorChannelName : config.publicCreatorChannelName;
   const roomName = isVip ? config.vipRoomNameFormat : config.publicRoomNameFormat;
@@ -314,7 +312,7 @@ function panelEmbed(guildData, panelType = 'public') {
       `**Akses:** ${accessText}`,
       'Hanya pemilik voice dan staff yang dapat memakai panel.'
     ].join('\n'))
-    .setThumbnail(animatedEmojiUrl())
+    .setThumbnail(thumbnailUrl)
     .setFooter({ text: config.panelFooter, iconURL: animatedEmojiUrl() })
     .setTimestamp();
 }
@@ -341,7 +339,25 @@ function panelComponents() {
 }
 
 async function sendVoicePanel(channel, guildData, panelType = 'public') {
-  return channel.send({ embeds: [panelEmbed(guildData, panelType)], components: panelComponents() });
+  const thumbnailPath = path.join(__dirname, 'assets', 'desa-tulus-panel.gif');
+  const hasCustomThumbnail = fs.existsSync(thumbnailPath);
+  const thumbnailUrl = hasCustomThumbnail
+    ? 'attachment://desa-tulus-panel.gif'
+    : animatedEmojiUrl();
+
+  const payload = {
+    embeds: [panelEmbed(guildData, panelType, thumbnailUrl)],
+    components: panelComponents()
+  };
+
+  if (hasCustomThumbnail) {
+    payload.files = [{
+      attachment: thumbnailPath,
+      name: 'desa-tulus-panel.gif'
+    }];
+  }
+
+  return channel.send(payload);
 }
 
 
@@ -1299,14 +1315,9 @@ client.on(Events.InteractionCreate, async interaction => {
   }
 });
 
-if (String(process.env.DASHBOARD_ENABLED || 'false').toLowerCase() === 'true') {
-  const app = express();
-  const dashboardPort = process.env.OT_PORT || process.env.PORT || 3000;
-  app.get('/', (req, res) => res.send('🎙️ Radio Desa • DESA TULUS aktif.'));
-  app.listen(dashboardPort, () => console.log(`🌐 Dashboard Radio Desa aktif di port ${dashboardPort}.`));
-} else {
-  console.log('🌐 Dashboard Radio Desa dimatikan sementara untuk mode Railway.');
-}
+// Dashboard/web server sengaja tidak dijalankan pada runtime bot Railway.
+// Railway Variables tetap dibaca langsung melalui process.env.
+console.log('🌐 Dashboard Radio Desa dimatikan. Bot berjalan dalam mode Discord-only.');
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN || process.env.TOKEN;
 
