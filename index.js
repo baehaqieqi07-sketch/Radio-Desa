@@ -138,6 +138,10 @@ function loadDB() {
 
 let db = loadDB();
 
+// Timer khusus penghapusan room kosong. Tidak mengubah nama, limit, owner,
+// permission, permit, atau pengaturan room selama room masih dipakai.
+const roomDeleteTimers = new Map();
+
 function saveDB() {
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }
@@ -789,36 +793,79 @@ async function createTemporaryRoom(newState, roomType = 'public') {
   await sendLog(guild, `${roomType === 'vip' ? '🏯' : '🏡'} <@${member.id}> membuat <#${channel.id}>.`);
 }
 
+function cancelRoomCleanup(channelId) {
+  if (!channelId) return;
+  const timer = roomDeleteTimers.get(channelId);
+  if (timer) clearTimeout(timer);
+  roomDeleteTimers.delete(channelId);
+}
+
+function isProtectedVoiceChannel(guildData, channelId) {
+  if (!guildData || !channelId) return false;
+  return [
+    guildData.publicCreatorChannelId,
+    guildData.vipCreatorChannelId,
+    guildData.creatorChannelId
+  ].filter(Boolean).includes(channelId);
+}
+
+async function deleteManagedRoomIfEmpty(guild, channelId, reason = 'Radio Desa: room kosong') {
+  if (!channelId || !db.rooms[channelId]) return false;
+
+  const guildData = ensureGuildData(guild.id);
+  // Pengaman: channel Buat Rumah/Buat Villa tidak boleh pernah ikut terhapus.
+  if (isProtectedVoiceChannel(guildData, channelId)) return false;
+
+  const channel = guild.channels.cache.get(channelId)
+    || await guild.channels.fetch(channelId).catch(() => null);
+
+  if (!channel) {
+    delete db.rooms[channelId];
+    saveDB();
+    cancelRoomCleanup(channelId);
+    return true;
+  }
+
+  if (channel.type !== ChannelType.GuildVoice) return false;
+
+  // Bot tidak dihitung sebagai warga. Jika hanya bot yang tersisa, room tetap kosong.
+  const humanCount = channel.members.filter(member => !member.user.bot).size;
+  if (humanCount > 0) return false;
+
+  await sendLog(guild, `🗑️ Voice sementara <#${channelId}> dihapus karena tidak ada warga di dalamnya.`);
+  const deleted = await channel.delete(reason).then(() => true).catch(error => {
+    console.error(`❌ Gagal menghapus room kosong ${channelId}:`, error?.message || error);
+    return false;
+  });
+
+  if (deleted) {
+    delete db.rooms[channelId];
+    saveDB();
+  }
+
+  cancelRoomCleanup(channelId);
+  return deleted;
+}
+
+function scheduleRoomCleanup(guild, channelId, customDelayMs = null) {
+  if (!channelId || !db.rooms[channelId]) return;
+
+  cancelRoomCleanup(channelId);
+  const delay = customDelayMs ?? Number(config.deleteDelayMs || 3000);
+
+  const timer = setTimeout(async () => {
+    roomDeleteTimers.delete(channelId);
+    await deleteManagedRoomIfEmpty(guild, channelId);
+  }, Math.max(500, delay));
+
+  roomDeleteTimers.set(channelId, timer);
+}
+
 async function cleanupRoom(oldState) {
   const channelId = oldState.channelId;
   if (!channelId || !db.rooms[channelId]) return;
-
-  const channel = oldState.guild.channels.cache.get(channelId) || await oldState.guild.channels.fetch(channelId).catch(() => null);
-  if (!channel || channel.type !== ChannelType.GuildVoice) {
-    delete db.rooms[channelId];
-    saveDB();
-    return;
-  }
-
-  const delay = Number(config.deleteDelayMs || 3000);
-  setTimeout(async () => {
-    const freshChannel = oldState.guild.channels.cache.get(channelId) || await oldState.guild.channels.fetch(channelId).catch(() => null);
-    if (!freshChannel) {
-      delete db.rooms[channelId];
-      saveDB();
-      return;
-    }
-
-    const humanCount = freshChannel.members.filter(member => !member.user.bot).size;
-    if (humanCount > 0) return;
-
-    await sendLog(oldState.guild, `🗑️ Voice sementara <#${channelId}> dihapus karena kosong.`);
-    await freshChannel.delete('Radio Desa: room kosong').catch(() => null);
-    delete db.rooms[channelId];
-    saveDB();
-  }, delay);
+  scheduleRoomCleanup(oldState.guild, channelId);
 }
-
 
 
 function normalizeRoomData(roomData) {
@@ -1039,11 +1086,20 @@ client.once(Events.ClientReady, async readyClient => {
   console.log(`🎙️ ${config.botName} online sebagai ${readyClient.user.tag}`);
   await autoRegisterSlashCommands(readyClient);
 
-  // Bersihkan data room yang channel-nya sudah tidak ada setelah restart.
+  // Bersihkan data channel yang sudah hilang dan hapus room terkelola yang kosong
+  // setelah restart. Nama/setting room yang masih berisi warga tidak disentuh.
   for (const [channelId, roomData] of Object.entries(db.rooms)) {
     const guild = readyClient.guilds.cache.get(roomData.guildId);
     const channel = guild ? await guild.channels.fetch(channelId).catch(() => null) : null;
-    if (!channel) delete db.rooms[channelId];
+    if (!channel) {
+      delete db.rooms[channelId];
+      continue;
+    }
+
+    if (channel.type === ChannelType.GuildVoice) {
+      const humanCount = channel.members.filter(member => !member.user.bot).size;
+      if (humanCount === 0) scheduleRoomCleanup(guild, channelId, 5000);
+    }
   }
   saveDB();
 });
@@ -1051,6 +1107,11 @@ client.once(Events.ClientReady, async readyClient => {
 client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
   try {
     const guildData = ensureGuildData(newState.guild.id);
+
+    // Jika ada warga masuk kembali sebelum timer selesai, pembatalan hapus otomatis.
+    if (newState.channelId && db.rooms[newState.channelId]) {
+      cancelRoomCleanup(newState.channelId);
+    }
 
     if (newState.channelId && newState.channelId === (guildData.publicCreatorChannelId || guildData.creatorChannelId)) {
       await createTemporaryRoom(newState, 'public');
@@ -1065,6 +1126,13 @@ client.on(Events.VoiceStateUpdate, async (oldState, newState) => {
   } catch (error) {
     console.error('❌ Error voiceStateUpdate:', error);
   }
+});
+
+client.on(Events.ChannelDelete, channel => {
+  if (!db.rooms[channel.id]) return;
+  cancelRoomCleanup(channel.id);
+  delete db.rooms[channel.id];
+  saveDB();
 });
 
 client.on(Events.MessageCreate, async message => {
