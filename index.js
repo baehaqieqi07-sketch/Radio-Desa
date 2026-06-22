@@ -301,7 +301,7 @@ function animatedEmojiUrl() {
   return `https://cdn.discordapp.com/emojis/${config.animatedEmojiId}.gif?size=128&quality=lossless`;
 }
 
-function panelEmbed(guildData, panelType = 'public', thumbnailUrl = animatedEmojiUrl()) {
+function panelEmbed(guildData, panelType = 'public') {
   const isVip = panelType === 'vip';
   const triggerName = isVip ? config.vipCreatorChannelName : config.publicCreatorChannelName;
   const roomName = isVip ? config.vipRoomNameFormat : config.publicRoomNameFormat;
@@ -333,7 +333,7 @@ function panelEmbed(guildData, panelType = 'public', thumbnailUrl = animatedEmoj
       `**Akses:** ${accessText}`,
       'Hanya pemilik voice dan staff yang dapat memakai panel.'
     ].join('\n'))
-    .setThumbnail(thumbnailUrl)
+    .setThumbnail(animatedEmojiUrl())
     .setFooter({ text: config.panelFooter, iconURL: animatedEmojiUrl() })
     .setTimestamp();
 }
@@ -360,23 +360,10 @@ function panelComponents() {
 }
 
 async function sendVoicePanel(channel, guildData, panelType = 'public') {
-  const thumbnailPath = path.join(__dirname, 'assets', 'desa-tulus-panel.png');
-  const hasCustomThumbnail = fs.existsSync(thumbnailPath);
-  const thumbnailUrl = hasCustomThumbnail
-    ? 'attachment://desa-tulus-panel.png'
-    : animatedEmojiUrl();
-
   const payload = {
-    embeds: [panelEmbed(guildData, panelType, thumbnailUrl)],
+    embeds: [panelEmbed(guildData, panelType)],
     components: panelComponents()
   };
-
-  if (hasCustomThumbnail) {
-    payload.files = [{
-      attachment: thumbnailPath,
-      name: 'desa-tulus-panel.png'
-    }];
-  }
 
   return channel.send(payload);
 }

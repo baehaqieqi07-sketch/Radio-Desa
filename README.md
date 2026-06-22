@@ -81,7 +81,7 @@ Jangan timpa atau hapus: `.env`, `config.json`, `db.json`, `voice-data.json`, `v
 
 ## Thumbnail panel khusus
 
-Gambar kanan atas embed panel memakai file `assets/desa-tulus-panel.gif`. File dikirim sebagai attachment Discord (`attachment://desa-tulus-panel.gif`) agar GIF yang diberikan dapat digunakan langsung tanpa membuat gambar baru. Jika file hilang, bot otomatis memakai emoji DESA TULUS sebagai fallback.
+Gambar kanan atas embed panel sekarang memakai CDN emoji `<a:Desa_Tulus2:1518502350363430932>` langsung melalui URL Discord. Tidak memakai file GIF/PNG lokal untuk thumbnail panel.
 
 ---
 
@@ -130,7 +130,7 @@ Command hanya dapat digunakan di channel `🔎 | cari-voice`. Jika digunakan di 
 Thumbnail kanan atas panel sekarang memakai file statis:
 
 ```text
-assets/desa-tulus-panel.png
+thumbnail panel memakai emoji CDN Desa_Tulus2
 ```
 
 GIF lama tidak digunakan lagi agar gambar thumbnail tidak hilang atau gagal tampil.

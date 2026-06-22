@@ -1,0 +1,9 @@
+Radio Desa v2.0.7 — Thumbnail Emoji Desa_Tulus2
+
+Update fokus:
+- Gambar kanan atas embed panel tidak lagi memakai file PNG/GIF lokal.
+- Thumbnail embed sekarang langsung memakai emoji CDN:
+  <a:Desa_Tulus2:1518502350363430932>
+- Tidak membuat gambar baru.
+- Tidak mengubah fitur voice, auto delete, permit, lock/unlock, atau cari voice.
+- Panel lama tetap perlu dihapus dan dikirim ulang dengan /radio-panel agar thumbnail baru tampil.
