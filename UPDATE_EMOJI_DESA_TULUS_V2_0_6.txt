@@ -1,0 +1,12 @@
+UPDATE RADIO DESA v2.0.6 - Emoji Desa Tulus2
+
+Fokus update:
+- Semua emoji Desa Tulus lama diganti ke emoji Desa Tulus2.
+- Semua embed, thumbnail/icon, footer icon, dan config runtime dipaksa memakai emoji terbaru.
+- config.example.json sudah memakai animatedEmojiId terbaru.
+- index.js memaksa config runtime memakai ID emoji terbaru, jadi config.json aktif yang lama tidak akan menampilkan emoji lama lagi.
+- Tidak mengubah logic voice, auto delete, lock/unlock, permit, cari voice, nama channel, category, atau data lama.
+
+Setelah deploy:
+- Hapus panel lama.
+- Kirim ulang panel dengan /radio-panel agar icon/thumbnail/footer memakai emoji baru.

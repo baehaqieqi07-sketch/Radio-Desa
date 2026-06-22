@@ -1,0 +1,11 @@
+RADIO DESA v2.0.5 — AUTO DELETE VOICE KOSONG
+
+Fokus update ini saja:
+- Room Rumah/Villa terkelola otomatis dihapus saat tidak ada user manusia di dalamnya.
+- Bot yang tertinggal sendirian tidak membuat room dianggap terisi.
+- Ada jeda aman mengikuti deleteDelayMs (default 3 detik) untuk mencegah salah hapus saat perpindahan voice.
+- Jika user masuk kembali sebelum timer selesai, penghapusan otomatis dibatalkan.
+- Setelah bot restart, room terkelola yang benar-benar kosong ikut dibersihkan setelah jeda 5 detik.
+- Channel Buat Rumah dan Buat Villa tidak pernah ikut dihapus.
+- Nama room, limit, owner, permission, lock, permit, reject, dan setting lain tidak direset atau diubah.
+- db.json/config.json aktif tidak disertakan di ZIP.

@@ -26,7 +26,7 @@ const DEFAULT_CONFIG = {
   serverName: 'DESA TULUS',
   botName: 'Radio Desa',
   embedColor: '#315C45',
-  animatedEmojiId: '1516424353934348299',
+  animatedEmojiId: '1518502350363430932',
   publicCreatorCategoryName: '═════ ➕BUAT VOICE➕ ═════',
   publicPanelChannelName: '〢•🎛️│ Pengaturan-Voice',
   voiceSearchChannelName: '🔎 | cari-voice',
@@ -70,6 +70,10 @@ function loadConfig() {
 }
 
 const config = loadConfig();
+
+// Paksa semua config memakai emoji DESA TULUS terbaru agar tidak ada emoji lama yang tampil lagi.
+config.animatedEmojiId = '1518502350363430932';
+
 const DB_PATH = path.join(__dirname, 'db.json');
 
 function buildSlashCommands() {
